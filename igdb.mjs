@@ -65,8 +65,8 @@ if (arg == "games") {
         "Content-Type": "application/json",
       },
       body: `fields *;
-      where rating > 80;
-      offset ${get_random_int(0, 4000)};
+      where rating >= 75;
+      offset ${get_random_int(0, 2500)};
       limit ${quant};`,
     });
 
