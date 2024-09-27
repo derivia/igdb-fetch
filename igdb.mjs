@@ -65,19 +65,25 @@ if (arg == "games") {
         "Content-Type": "application/json",
       },
       body: `fields *;
-      where rating >= 75;
-      offset ${get_random_int(0, 2500)};
-      limit ${quant};`,
+      offset ${get_random_int(0, 1000)};
+      limit ${quant};
+      where total_rating >= 75 & total_rating_count >= 100;`,
     });
 
     const data = await response.json();
     const filteredData = data
       .map((item) => {
-        const { name, url, first_release_date } = item;
+        const {
+          name,
+          url,
+          first_release_date,
+          total_rating,
+          total_rating_count,
+        } = item;
         const date = new Date(first_release_date * 1000).toLocaleDateString(
           "pt-BR",
         );
-        return `- ${name} [${url}] [${date}]`;
+        return `- ${name} [${url}] [${date}] [${total_rating.toFixed(2)} - ${total_rating_count}]`;
       })
       .join("\n");
 
