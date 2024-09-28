@@ -2,10 +2,10 @@ import { readFile, writeFile, readFileSync, appendFile } from "node:fs";
 
 ("use strict");
 
-if (process.argv[2] == undefined) {
+if (process.argv[2] == undefined || process.argv[3] == undefined) {
   console.log("You need to pass some arguments [oauth | games]");
   console.log("1. `oauth` to get secret key and id");
-  console.log("2. `games` to get a list of games");
+  console.log("2. `games` <quantity> to get a list of games");
   process.exit();
 }
 
@@ -15,7 +15,6 @@ function get_random_int(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-let quant;
 const [client_id, client_secret, access_token] = readFileSync(
   "./secret",
   "utf8",
@@ -25,11 +24,35 @@ const [client_id, client_secret, access_token] = readFileSync(
   .map((line) => line.trim());
 
 const arg = process.argv[2];
+const quant = process.argv[3] || 10;
+const genre = process.argv[4] || "";
 
-if (process.argv[3] != undefined) {
-  quant = process.argv[3];
+// @TODO: add more genres to dictionary
+const genres = new Map([
+  ["shooter", 5],
+  ["indie", 32],
+  ["rpg", 12],
+  ["puzzle", 9],
+  ["tbs", 16],
+]);
+
+const genreID = genres.get(genre.toLowerCase());
+
+let limit = quant;
+if (genreID) {
+  limit = 500;
+}
+
+let body = `fields *; `;
+if (!genreID) {
+  body += `offset ${get_random_int(0, 1000)}; `;
+}
+body += `limit ${limit}; where total_rating >= 75 & total_rating_count >= 100`;
+
+if (genreID) {
+  body += ` & genres = (${genreID}); offset ${get_random_int(0, limit / 4)}; limit ${quant};`;
 } else {
-  quant = 10;
+  body += `;`;
 }
 
 if (arg == "oauth") {
@@ -64,10 +87,7 @@ if (arg == "games") {
         Authorization: `Bearer ${access_token}`,
         "Content-Type": "application/json",
       },
-      body: `fields *;
-      offset ${get_random_int(0, 1000)};
-      limit ${quant};
-      where total_rating >= 75 & total_rating_count >= 100;`,
+      body: body,
     });
 
     const data = await response.json();
