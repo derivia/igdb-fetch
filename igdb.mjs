@@ -2,7 +2,10 @@ import { readFile, writeFile, readFileSync, appendFile } from "node:fs";
 
 ("use strict");
 
-if (process.argv[2] == undefined || process.argv[3] == undefined) {
+if (
+  process.argv[2] == undefined ||
+  (process.argv[2] == "games" && process.argv[3] == undefined)
+) {
   console.log("You need to pass some arguments [oauth | games]");
   console.log("1. `oauth` to get secret key and id");
   console.log("2. `games` <quantity> to get a list of games");
@@ -27,13 +30,15 @@ const arg = process.argv[2];
 const quant = process.argv[3] || 10;
 const genre = process.argv[4] || "";
 
-// @TODO: add more genres to dictionary
 const genres = new Map([
   ["shooter", 5],
-  ["indie", 32],
-  ["rpg", 12],
+  ["platform", 8],
   ["puzzle", 9],
-  ["tbs", 16],
+  ["rpg", 12],
+  ["simulator", 13],
+  ["strategy", 15],
+  ["tbs", 16], // turn-based strategy
+  ["indie", 32],
 ]);
 
 const genreID = genres.get(genre.toLowerCase());
